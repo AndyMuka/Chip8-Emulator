@@ -1,7 +1,8 @@
-#include <iostream> 
+#include <iostream>
+#include <SDL.h>
 
-int main(){
-    
-    std::cout << "Is this thing On?? "; 
-    
+int main()
+{
+
+    std::cout << "Is this thing On?? ";
 }
