@@ -9,8 +9,8 @@ int main(int argc, char *args[])
     // Pointer to main window that will everything will be rendered to
     SDL_Window *window = NULL;
 
-    // The surface contained inside the window
-    SDL_Surface *screenSurface = NULL;
+    // The graphics renderer contained inside the window
+    SDL_Renderer *graphicsRenderer = NULL;
 
     // Initializing SDL. If any errors, SDL_Init returns -1
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -27,19 +27,25 @@ int main(int argc, char *args[])
     if (window == NULL)
     {
         // If window isnt created, it stays NULL. Quits the SDL subsystems since it was initialized earlier before ending the program
-        SDL_Quit();
         std::cerr << "Window could not be created. SDL_Error: " << SDL_GetError() << std::endl;
+        SDL_Quit();
         return 1;
     }
 
-    // Creates a real screen and attaches it to the screenSurface variable
-    screenSurface = SDL_GetWindowSurface(window);
+    // Creates Renderer for the window. Basically tells SDL2 to use GPU instead of CPU to draw graphics
+    graphicsRenderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    // Fills the surface white (draws on surface)
-    SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
+    // If renderer doesnt get created, it quits SDL subsystem and ends program
+    if (graphicsRenderer == NULL)
+    {
+        std::cerr << "Grahics Renderer could not be created: " << SDL_GetError() << std::endl;
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
 
-    // Update the surface (makes drawing actually visible)
-    SDL_UpdateWindowSurface(window);
+    // Initialize renderer color SetRenderDrawColor(R, G, B, opaque)
+    SDL_SetRenderDrawColor(graphicsRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
     // This chunk of code keeps the window open
     // If while quit is false, to see if a nevent occurs and if that event is the "X" button clicked (SDL_QUIT)
@@ -53,8 +59,16 @@ int main(int argc, char *args[])
             if (e.type == SDL_QUIT)
                 quit = true;
         }
+
+        // Clear Screen
+        SDL_RenderClear(graphicsRenderer);
+
+        // Update Screen
+        SDL_RenderPresent(graphicsRenderer);
     }
 
+    // Destroys renderer
+    SDL_DestroyRenderer(graphicsRenderer);
     // Destroys the window
     SDL_DestroyWindow(window);
 
