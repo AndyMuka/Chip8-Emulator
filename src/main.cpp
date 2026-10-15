@@ -1,8 +1,10 @@
 #include <iostream>
 #include <SDL.h>
+#include <array>
 
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+const int SCREEN_WIDTH = 64;  // CHIP8 cells across
+const int SCREEN_HEIGHT = 32; // CHIP8 cells down
+const int SCALE = 10;         // Pixels per cell
 
 int main(int argc, char *args[])
 {
@@ -23,7 +25,7 @@ int main(int argc, char *args[])
 
     // Creates window. SDL_CreateWindow(titel, xpos, ypos, width, height, flag)
     // SDL_WINDOWPOS_UNDEFINED lets the OS decide where to put the window in terms of coordinates
-    window = SDL_CreateWindow("Chip8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN); // WINDOW_SHOWN makes sure window is visible after created
+    window = SDL_CreateWindow("Chip8 Emulator", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH * SCALE, SCREEN_HEIGHT * SCALE, SDL_WINDOW_SHOWN); // WINDOW_SHOWN makes sure window is visible after created
     if (window == NULL)
     {
         // If window isnt created, it stays NULL. Quits the SDL subsystems since it was initialized earlier before ending the program
@@ -44,8 +46,21 @@ int main(int argc, char *args[])
         return 1;
     }
 
-    // Initialize renderer color SetRenderDrawColor(R, G, B, opaque)
-    SDL_SetRenderDrawColor(graphicsRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    // array for the display of CHIP* with all indexes initialized to false
+    std::array<bool, SCREEN_WIDTH * SCREEN_HEIGHT> display = {};
+
+    // checker board pattern for "on" and "off" cells int the array
+    for (int y = 0; y < SCREEN_HEIGHT; ++y)
+    {
+        for (int x = 0; x < SCREEN_WIDTH; ++x)
+        {
+            int index = x + SCREEN_WIDTH * y;
+            if ((x + y) % 2)
+            {
+                display[index] = true;
+            }
+        }
+    }
 
     // This chunk of code keeps the window open
     // If while quit is false, to see if a nevent occurs and if that event is the "X" button clicked (SDL_QUIT)
@@ -60,8 +75,29 @@ int main(int argc, char *args[])
                 quit = true;
         }
 
-        // Clear Screen
+        // clearing color to black every frame
+        SDL_SetRenderDrawColor(graphicsRenderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(graphicsRenderer);
+
+        // setting color back to white for drawing purposes
+        SDL_SetRenderDrawColor(graphicsRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+        for (int y = 0; y < SCREEN_HEIGHT; ++y)
+        {
+            for (int x = 0; x < SCREEN_WIDTH; ++x)
+            {
+                int index = x + SCREEN_WIDTH * y;
+                if (display[index])
+                {
+                    SDL_Rect cell;
+                    cell.x = x * SCALE;
+                    cell.y = y * SCALE;
+                    cell.w = SCALE;
+                    cell.h = SCALE;
+                    SDL_RenderFillRect(graphicsRenderer, &cell);
+                }
+            }
+        }
 
         // Update Screen
         SDL_RenderPresent(graphicsRenderer);
