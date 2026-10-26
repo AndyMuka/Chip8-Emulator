@@ -7,3 +7,4 @@ add_executable(chip8 src/main.cpp
     src/chip8.cpp)
 target_link_libraries(chip8 PRIVATE SDL2::SDL2main SDL2::SDL2)
 target_compile_options(chip8 PRIVATE -Wall -Wextra -Wpedantic)
+target_include_directories(chip8 PRIVATE include)

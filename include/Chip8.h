@@ -4,25 +4,30 @@
 
 class Chip8
 {
-private:
-    std::array<uint8_t, 4096> memory{};
-    std::array<uint8_t, 16> reg{};
-    uint32_t indexReg{};
-    uint32_t pc{};
-    uint32_t delayTimer{};
-    uint8_t soundTimer{};
-    std::array<uint16_t, 16> stack{};
-    uint16_t *stackPtr = NULL;
-
 public:
     Chip8();
     ~Chip8();
+    static constexpr int DISPLAY_WIDTH = 64;
+    static constexpr int DISPLAY_HEIGHT = 32;
+    static constexpr int MEMORY_SIZE = 4096;
+    static constexpr int NUM_REGISTERS = 16;
+    static constexpr int STACK_SIZE = 16;
+    static constexpr int NUM_KEYS = 16;
+    static constexpr uint16_t PROGRAM_START = 0x200;
+    static constexpr uint16_t FONT_START = 0x050;
+
+    const std::array<bool, DISPLAY_WIDTH * DISPLAY_HEIGHT> &getDisplay() const;
+
+private:
+    std::array<uint8_t, MEMORY_SIZE> memory{};
+    std::array<uint8_t, NUM_REGISTERS> reg{};
+    uint16_t indexReg{};
+    uint16_t pc{};
+    uint8_t delayTimer{};
+    uint8_t soundTimer{};
+    std::array<uint16_t, STACK_SIZE> stack{};
+    uint8_t stackPtr{};
+
+    std::array<bool, DISPLAY_WIDTH * DISPLAY_HEIGHT> display{};
+    std::array<bool, NUM_KEYS> keys{};
 };
-
-Chip8::Chip8()
-{
-}
-
-Chip8::~Chip8()
-{
-}

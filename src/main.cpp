@@ -2,6 +2,8 @@
 #include <SDL.h>
 #include <array>
 
+#include "chip8.h"
+
 const int SCREEN_WIDTH = 64;  // CHIP8 cells across
 const int SCREEN_HEIGHT = 32; // CHIP8 cells down
 const int SCALE = 10;         // Pixels per cell
@@ -46,21 +48,12 @@ int main(int argc, char *args[])
         return 1;
     }
 
-    // array for the display of CHIP* with all indexes initialized to false
-    std::array<bool, SCREEN_WIDTH * SCREEN_HEIGHT> display = {};
+    // creating the chip8 device going to be used
 
-    // checker board pattern for "on" and "off" cells int the array
-    for (int y = 0; y < SCREEN_HEIGHT; ++y)
-    {
-        for (int x = 0; x < SCREEN_WIDTH; ++x)
-        {
-            int index = x + SCREEN_WIDTH * y;
-            if ((x + y) % 2)
-            {
-                display[index] = true;
-            }
-        }
-    }
+    Chip8 device;
+
+    // array for the display of CHIP* with all indexes initialized to false
+    const auto &display = device.getDisplay();
 
     // This chunk of code keeps the window open
     // If while quit is false, to see if a nevent occurs and if that event is the "X" button clicked (SDL_QUIT)
@@ -82,9 +75,9 @@ int main(int argc, char *args[])
         // setting color back to white for drawing purposes
         SDL_SetRenderDrawColor(graphicsRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 
-        for (int y = 0; y < SCREEN_HEIGHT; ++y)
+        for (int y = 0; y < Chip8::DISPLAY_HEIGHT; ++y)
         {
-            for (int x = 0; x < SCREEN_WIDTH; ++x)
+            for (int x = 0; x < Chip8::DISPLAY_WIDTH; ++x)
             {
                 int index = x + SCREEN_WIDTH * y;
                 if (display[index])
