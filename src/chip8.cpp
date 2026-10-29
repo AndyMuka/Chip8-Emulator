@@ -1,4 +1,7 @@
 #include "chip8.h"
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 
 constexpr std::array<uint8_t, 80> FONT = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -36,4 +39,17 @@ Chip8::~Chip8()
 const std::array<bool, Chip8::DISPLAY_WIDTH * Chip8::DISPLAY_HEIGHT> &Chip8::getDisplay() const
 {
     return display;
+}
+
+void Chip8::loadRom(const std::string &)
+{
+
+    // Opens the file based on th filepath
+    std::ifstream file("../roms/2-ibm-logo.ch8");
+
+    // Checks if the file is open and if it isnt, it throws a runtime error
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Error: Was not able to open the file!");
+    }
 }
