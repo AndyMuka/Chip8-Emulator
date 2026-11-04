@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <array>
+#include <string>
 
 class Chip8
 {
@@ -15,8 +16,12 @@ public:
     static constexpr int NUM_KEYS = 16;
     static constexpr uint16_t PROGRAM_START = 0x200;
     static constexpr uint16_t FONT_START = 0x050;
+    static constexpr uint16_t MAX_ROM_SIZE = MEMORY_SIZE - PROGRAM_START;
 
     const std::array<bool, DISPLAY_WIDTH * DISPLAY_HEIGHT> &getDisplay() const;
+
+    bool loadRom(const std::string &path);
+    void printState() const;
 
 private:
     std::array<uint8_t, MEMORY_SIZE> memory{};
