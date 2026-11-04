@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <array>
+#include <string>
 
 class Chip8
 {
@@ -19,7 +20,8 @@ public:
 
     const std::array<bool, DISPLAY_WIDTH * DISPLAY_HEIGHT> &getDisplay() const;
 
-    void loadRom(const std::string &);
+    bool loadRom(const std::string &path);
+    void printState() const;
 
 private:
     std::array<uint8_t, MEMORY_SIZE> memory{};

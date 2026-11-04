@@ -8,8 +8,13 @@ const int SCREEN_WIDTH = 64;  // CHIP8 cells across
 const int SCREEN_HEIGHT = 32; // CHIP8 cells down
 const int SCALE = 10;         // Pixels per cell
 
-int main(int argc, char *args[])
+int main(int argc, char *argv[])
 {
+    if (argc < 2)
+    {
+        std::cerr << "Usage: Chip8 <path-to-rom> " << std::endl;
+        return 1;
+    }
     // Pointer to main window that will everything will be rendered to
     SDL_Window *window = NULL;
 
@@ -49,8 +54,21 @@ int main(int argc, char *args[])
     }
 
     // creating the chip8 device going to be used
-
     Chip8 device;
+
+    // runs load rom method using filepath from main parameter. if loadrom fails, sdl is cleaned up and program is closed
+    if (!device.loadRom(argv[1]))
+    {
+        // Destroys renderer
+        SDL_DestroyRenderer(graphicsRenderer);
+        // Destroys the window
+        SDL_DestroyWindow(window);
+
+        // Quit SDL subsystems
+        SDL_Quit();
+
+        return 1;
+    }
 
     // array for the display of CHIP* with all indexes initialized to false
     const auto &display = device.getDisplay();
