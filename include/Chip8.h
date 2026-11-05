@@ -22,6 +22,7 @@ public:
 
     bool loadRom(const std::string &path);
     void printState() const;
+    void step();
 
 private:
     std::array<uint8_t, MEMORY_SIZE> memory{};
