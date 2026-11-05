@@ -103,3 +103,68 @@ void Chip8::printState() const
     // Put cout back to normal decimal output
     std::cout << std::dec << std::nouppercase << std::setfill(' ');
 }
+
+void Chip8::step()
+{
+    // One step goes fetch --> decode --> execute
+
+    // Fetching the opcodes to make the instructions
+    uint16_t instruction = (memory[pc] << 8) | memory[pc + 1];
+
+    // prints the instruction with formatting of hex number
+    std::cout << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << instruction << std::endl;
+
+    // Resets the output formatting to normal decimal output
+    std::cout << std::dec << std::nouppercase << std::setfill(' ');
+    pc += 2;
+
+    // Decode part of the step method
+    uint8_t firstDigit = (instruction >> 12) & 0xF;
+    uint8_t X = (instruction >> 8) & 0xF;
+    uint8_t Y = (instruction >> 4) & 0xF;
+    uint8_t N = (instruction) & 0xF;
+    uint16_t NN = (instruction) & 0xFF;
+    uint16_t NNN = (instruction) & 0xFFF;
+
+    // execute part of the step method
+    switch (firstDigit)
+    {
+    case 0x0:
+        break;
+    case 0x1:
+        break;
+    case 0x2:
+        break;
+    case 0x3:
+        break;
+    case 0x4:
+        break;
+    case 0x5:
+        break;
+    case 0x6:
+        break;
+    case 0x7:
+        break;
+    case 0x8:
+        break;
+    case 0x9:
+        break;
+    case 0xA:
+        break;
+    case 0xB:
+        break;
+    case 0xC:
+        break;
+    case 0xD:
+        break;
+    case 0xE:
+        break;
+    case 0xF:
+        break;
+
+    default:
+        std::cerr << "Unknown opcode: "
+                  << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << instruction
+                  << std::nouppercase << std::dec << std::setfill(' ') << std::endl;
+    }
+}

@@ -70,6 +70,17 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    device.step();
+    device.step();
+    device.step();
+    device.step();
+    device.step();
+    device.step();
+    device.step();
+    device.step();
+    device.step();
+    device.step();
+
     // array for the display of CHIP* with all indexes initialized to false
     const auto &display = device.getDisplay();
 
