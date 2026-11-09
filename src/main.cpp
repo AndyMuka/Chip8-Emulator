@@ -7,6 +7,7 @@
 const int SCREEN_WIDTH = 64;  // CHIP8 cells across
 const int SCREEN_HEIGHT = 32; // CHIP8 cells down
 const int SCALE = 10;         // Pixels per cell
+const int INSTRUCTIONS_PER_FRAME = 11;
 
 int main(int argc, char *argv[])
 {
@@ -20,6 +21,23 @@ int main(int argc, char *argv[])
 
     // The graphics renderer contained inside the window
     SDL_Renderer *graphicsRenderer = NULL;
+
+    // creating the chip8 device going to be used
+    Chip8 device;
+
+    // runs load rom method using filepath from main parameter. if loadrom fails, sdl is cleaned up and program is closed
+    if (!device.loadRom(argv[1]))
+    {
+        // Destroys renderer
+        SDL_DestroyRenderer(graphicsRenderer);
+        // Destroys the window
+        SDL_DestroyWindow(window);
+
+        // Quit SDL subsystems
+        SDL_Quit();
+
+        return 1;
+    }
 
     // Initializing SDL. If any errors, SDL_Init returns -1
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -53,35 +71,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // creating the chip8 device going to be used
-    Chip8 device;
-
-    // runs load rom method using filepath from main parameter. if loadrom fails, sdl is cleaned up and program is closed
-    if (!device.loadRom(argv[1]))
-    {
-        // Destroys renderer
-        SDL_DestroyRenderer(graphicsRenderer);
-        // Destroys the window
-        SDL_DestroyWindow(window);
-
-        // Quit SDL subsystems
-        SDL_Quit();
-
-        return 1;
-    }
-
-    device.step();
-    device.step();
-    device.step();
-    device.step();
-    device.step();
-    device.step();
-    device.step();
-    device.step();
-    device.step();
-    device.step();
-
-    // array for the display of CHIP* with all indexes initialized to false
     const auto &display = device.getDisplay();
 
     // This chunk of code keeps the window open
@@ -95,6 +84,10 @@ int main(int argc, char *argv[])
         {
             if (e.type == SDL_QUIT)
                 quit = true;
+        }
+        for (int i = 0; i < INSTRUCTIONS_PER_FRAME; i++)
+        {
+            device.step();
         }
 
         // clearing color to black every frame
@@ -123,6 +116,7 @@ int main(int argc, char *argv[])
 
         // Update Screen
         SDL_RenderPresent(graphicsRenderer);
+        SDL_Delay(16);
     }
 
     // Destroys renderer

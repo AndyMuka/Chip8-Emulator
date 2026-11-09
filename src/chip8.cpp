@@ -120,18 +120,24 @@ void Chip8::step()
 
     // Decode part of the step method
     uint8_t firstDigit = (instruction >> 12) & 0xF;
-    uint8_t X = (instruction >> 8) & 0xF;
-    uint8_t Y = (instruction >> 4) & 0xF;
-    uint8_t N = (instruction) & 0xF;
-    uint16_t NN = (instruction) & 0xFF;
-    uint16_t NNN = (instruction) & 0xFFF;
+    uint8_t X = (instruction >> 8) & 0xF; // Second
+    uint8_t Y = (instruction >> 4) & 0xF; // Third
+    uint8_t N = (instruction) & 0xF;      // fourth
+    uint16_t NN = (instruction) & 0xFF;   // last two
+    uint16_t NNN = (instruction) & 0xFFF; // last three
 
     // execute part of the step method
     switch (firstDigit)
     {
     case 0x0:
+        if (NNN == 0x0E0)
+        {
+            // 0x00E0 Instruction: Clears screen
+            display.fill(false);
+        }
         break;
     case 0x1:
+        pc = NNN;
         break;
     case 0x2:
         break;
@@ -142,21 +148,64 @@ void Chip8::step()
     case 0x5:
         break;
     case 0x6:
+        reg[X] = NN;
         break;
     case 0x7:
+        reg[X] = reg[X] + NN;
         break;
     case 0x8:
         break;
     case 0x9:
         break;
     case 0xA:
+        indexReg = NNN;
         break;
     case 0xB:
         break;
     case 0xC:
         break;
     case 0xD:
-        break;
+    {
+        int xcoord = reg[X] % DISPLAY_WIDTH;
+        int ycoord = reg[Y] % DISPLAY_HEIGHT;
+        reg[0xF] = 0;
+
+        uint8_t pixelData;
+        int coulumnCount;
+
+        // repeating this N times
+        for (uint8_t i = 0; i < N; i++)
+        {
+            // For each row
+            coulumnCount = 0;
+            // Moves doesn to the next row after filling the current row
+            pixelData = memory[indexReg + i];
+
+            // Filling the row with the pixel data.
+            for (int j = 7; j >= 0; j--)
+            {
+                if ((xcoord + coulumnCount >= DISPLAY_WIDTH || (ycoord + i) >= DISPLAY_HEIGHT))
+                {
+                    coulumnCount += 1;
+                    continue;
+                }
+                if ((pixelData >> j) & 0b1)
+                {
+                    if (display[(xcoord + coulumnCount) + (DISPLAY_WIDTH * (ycoord + i))])
+                    {
+                        display[(xcoord + coulumnCount) + (DISPLAY_WIDTH * (ycoord + i))] = false;
+                        reg[0xF] = 1;
+                    }
+                    else
+                    {
+                        display[(xcoord + coulumnCount) + (DISPLAY_WIDTH * (ycoord + i))] = true;
+                    }
+                }
+                coulumnCount += 1;
+            }
+        }
+    }
+    break;
     case 0xE:
         break;
     case 0xF:
