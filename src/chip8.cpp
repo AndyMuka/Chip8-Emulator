@@ -135,17 +135,35 @@ void Chip8::step()
             // 0x00E0 Instruction: Clears screen
             display.fill(false);
         }
+        else if (NNN == 0x0EE)
+        {
+            pc = pop();
+        }
         break;
     case 0x1:
         pc = NNN;
         break;
     case 0x2:
+        push(pc);
+        pc = NNN;
         break;
     case 0x3:
+        if (reg[X] == NN)
+        {
+            pc += 2;
+        }
         break;
     case 0x4:
+        if (reg[X] != NN)
+        {
+            pc += 2;
+        }
         break;
     case 0x5:
+        if (reg[X] == reg[Y])
+        {
+            pc += 2;
+        }
         break;
     case 0x6:
         reg[X] = NN;
@@ -156,6 +174,10 @@ void Chip8::step()
     case 0x8:
         break;
     case 0x9:
+        if (reg[X] != reg[Y])
+        {
+            pc += 2;
+        }
         break;
     case 0xA:
         indexReg = NNN;
