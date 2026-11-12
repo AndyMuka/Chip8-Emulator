@@ -112,7 +112,7 @@ void Chip8::step()
     uint16_t instruction = (memory[pc] << 8) | memory[pc + 1];
 
     // prints the instruction with formatting of hex number
-    std::cout << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << instruction << std::endl;
+    // std::cout << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << instruction << std::endl;
 
     // Resets the output formatting to normal decimal output
     std::cout << std::dec << std::nouppercase << std::setfill(' ');
@@ -216,4 +216,32 @@ void Chip8::step()
                   << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << instruction
                   << std::nouppercase << std::dec << std::setfill(' ') << std::endl;
     }
+}
+
+void Chip8::push(uint16_t value)
+{
+    // logic for pushing into stack
+    if (stackPtr < STACK_SIZE)
+    {
+        stack[stackPtr] = value;
+        stackPtr += 1;
+    }
+    else
+    {
+        std::cerr << "STACK IS FULL! " << std::endl;
+    }
+}
+
+uint16_t Chip8::pop()
+{
+    // logic for popping value out of stack
+    if (stackPtr == 0)
+    {
+        std::cerr << "STACK IS EMPTY! " << std::endl;
+        return 0;
+    }
+    stackPtr -= 1;
+    uint16_t temp = stack[stackPtr];
+    stack[stackPtr] = 0;
+    return temp;
 }

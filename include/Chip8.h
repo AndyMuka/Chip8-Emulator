@@ -23,6 +23,8 @@ public:
     bool loadRom(const std::string &path);
     void printState() const;
     void step();
+    void push(uint16_t value);
+    uint16_t pop();
 
 private:
     std::array<uint8_t, MEMORY_SIZE> memory{};
