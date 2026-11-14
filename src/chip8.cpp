@@ -172,6 +172,73 @@ void Chip8::step()
         reg[X] = reg[X] + NN;
         break;
     case 0x8:
+        switch (N)
+        {
+        case 0x0:
+            reg[X] = reg[Y];
+            break;
+        case 0x1:
+            reg[X] = reg[X] | reg[Y];
+            break;
+        case 0x2:
+            reg[X] = reg[X] & reg[Y];
+            break;
+        case 0x3:
+            reg[X] = reg[X] ^ reg[Y];
+            break;
+        case 0x4:
+        {
+            int temp = reg[X] + reg[Y];
+            reg[X] = temp;
+            if (temp > 255)
+            {
+                reg[0xF] = 1;
+            }
+            else
+            {
+                reg[0xF] = 0;
+            }
+        }
+        break;
+        case 0x5:
+        {
+            int temp = reg[X] - reg[Y];
+            reg[X] = temp;
+            if (temp >= 0)
+            {
+                reg[0xF] = 1;
+            }
+            else
+            {
+                reg[0xF] = 0;
+            }
+        }
+        break;
+        case 0x6:
+        {
+            reg[X] = reg[Y];
+            uint8_t temp = reg[X] & 0b1;
+            reg[X] = reg[X] >> 1;
+            reg[0xF] = temp;
+        }
+        break;
+        case 0x7:
+        {
+            int temp = reg[Y] - reg[X];
+            reg[X] = temp;
+            if (temp >= 0)
+            {
+                reg[0xF] = 1;
+            }
+            else
+            {
+                reg[0xF] = 0;
+            }
+        }
+        break;
+        case 0xE:
+            break;
+        }
         break;
     case 0x9:
         if (reg[X] != reg[Y])
@@ -229,7 +296,13 @@ void Chip8::step()
     }
     break;
     case 0xE:
-        break;
+    {
+        reg[X] = reg[Y];
+        uint8_t temp = reg[X] & 0b1;
+        reg[X] = reg[X] >> 1;
+        reg[0xF] = temp;
+    }
+    break;
     case 0xF:
         break;
 

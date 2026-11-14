@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <array>
 #include <string>
+#include <random>
 
 class Chip8
 {
