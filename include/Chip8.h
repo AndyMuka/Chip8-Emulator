@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <array>
 #include <string>
+#include <random>
 
 class Chip8
 {
@@ -23,6 +24,8 @@ public:
     bool loadRom(const std::string &path);
     void printState() const;
     void step();
+    void push(uint16_t value);
+    uint16_t pop();
 
 private:
     std::array<uint8_t, MEMORY_SIZE> memory{};
@@ -33,6 +36,7 @@ private:
     uint8_t soundTimer{};
     std::array<uint16_t, STACK_SIZE> stack{};
     uint8_t stackPtr{};
+    std::mt19937 rng{std::random_device{}()};
 
     std::array<bool, DISPLAY_WIDTH * DISPLAY_HEIGHT> display{};
     std::array<bool, NUM_KEYS> keys{};

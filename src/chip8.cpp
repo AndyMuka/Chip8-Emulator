@@ -112,7 +112,7 @@ void Chip8::step()
     uint16_t instruction = (memory[pc] << 8) | memory[pc + 1];
 
     // prints the instruction with formatting of hex number
-    std::cout << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << instruction << std::endl;
+    // std::cout << std::hex << std::uppercase << std::setw(4) << std::setfill('0') << instruction << std::endl;
 
     // Resets the output formatting to normal decimal output
     std::cout << std::dec << std::nouppercase << std::setfill(' ');
@@ -135,17 +135,35 @@ void Chip8::step()
             // 0x00E0 Instruction: Clears screen
             display.fill(false);
         }
+        else if (NNN == 0x0EE)
+        {
+            pc = pop();
+        }
         break;
     case 0x1:
         pc = NNN;
         break;
     case 0x2:
+        push(pc);
+        pc = NNN;
         break;
     case 0x3:
+        if (reg[X] == NN)
+        {
+            pc += 2;
+        }
         break;
     case 0x4:
+        if (reg[X] != NN)
+        {
+            pc += 2;
+        }
         break;
     case 0x5:
+        if (reg[X] == reg[Y])
+        {
+            pc += 2;
+        }
         break;
     case 0x6:
         reg[X] = NN;
@@ -154,16 +172,104 @@ void Chip8::step()
         reg[X] = reg[X] + NN;
         break;
     case 0x8:
+        switch (N)
+        {
+        case 0x0:
+            reg[X] = reg[Y];
+            break;
+        case 0x1:
+            reg[X] = reg[X] | reg[Y];
+            break;
+        case 0x2:
+            reg[X] = reg[X] & reg[Y];
+            break;
+        case 0x3:
+            reg[X] = reg[X] ^ reg[Y];
+            break;
+        case 0x4:
+        {
+            int temp = reg[X] + reg[Y];
+            reg[X] = temp;
+            if (temp > 255)
+            {
+                reg[0xF] = 1;
+            }
+            else
+            {
+                reg[0xF] = 0;
+            }
+        }
+        break;
+        case 0x5:
+        {
+            int temp = reg[X] - reg[Y];
+            reg[X] = temp;
+            if (temp >= 0)
+            {
+                reg[0xF] = 1;
+            }
+            else
+            {
+                reg[0xF] = 0;
+            }
+        }
+        break;
+        case 0x6:
+        {
+            reg[X] = reg[Y];
+            uint8_t temp = reg[X] & 0b1;
+            reg[X] = reg[X] >> 1;
+            reg[0xF] = temp;
+        }
+        break;
+        case 0x7:
+        {
+            int temp = reg[Y] - reg[X];
+            reg[X] = temp;
+            if (temp >= 0)
+            {
+                reg[0xF] = 1;
+            }
+            else
+            {
+                reg[0xF] = 0;
+            }
+        }
+        break;
+        case 0xE:
+        {
+            reg[X] = reg[Y];
+            uint8_t temp = (reg[X] >> 7) & 0b1;
+            reg[X] = reg[X] << 1;
+            reg[0xF] = temp;
+        }
+        break;
+        default:
+            std::cerr << "Unknown opcode: "
+                      << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << instruction
+                      << std::nouppercase << std::dec << std::setfill(' ') << std::endl;
+            break;
+        }
         break;
     case 0x9:
+        if (reg[X] != reg[Y])
+        {
+            pc += 2;
+        }
         break;
     case 0xA:
         indexReg = NNN;
         break;
     case 0xB:
+        pc = NNN + reg[0];
         break;
     case 0xC:
-        break;
+    {
+        std::uniform_int_distribution<int> distribution(0, 255);
+        int randomNumber = distribution(rng);
+        reg[X] = randomNumber & NN;
+    }
+    break;
     case 0xD:
     {
         int xcoord = reg[X] % DISPLAY_WIDTH;
@@ -209,6 +315,65 @@ void Chip8::step()
     case 0xE:
         break;
     case 0xF:
+        switch (NN)
+        {
+        case 0x07:
+            reg[X] = delayTimer;
+            break;
+
+        case 0x15:
+            delayTimer = reg[X];
+            break;
+
+        case 0x18:
+            soundTimer = reg[X];
+            break;
+
+        case 0x1E:
+            indexReg += reg[X];
+            break;
+
+        case 0x0A:
+            break;
+
+        case 0x29:
+        {
+            int temp = reg[X] & 0xF;
+            indexReg = FONT_START + (5 * temp);
+        }
+        break;
+
+        case 0x33:
+            // gets the hundreds, tens and ones digits from reg[X]
+            memory[indexReg] = reg[X] / 100;
+            memory[indexReg + 1] = (reg[X] / 10) % 10;
+            memory[indexReg + 2] = reg[X] % 10;
+            break;
+
+        case 0x55:
+        {
+            for (int i = 0; i <= X; i++)
+            {
+                memory[indexReg + i] = reg[i];
+            }
+            indexReg += X + 1;
+        }
+        break;
+
+        case 0x65:
+        {
+            for (int i = 0; i <= X; i++)
+            {
+                reg[i] = memory[indexReg + i];
+            }
+            indexReg += X + 1;
+        }
+        break;
+        default:
+            std::cerr << "Unknown opcode: "
+                      << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << instruction
+                      << std::nouppercase << std::dec << std::setfill(' ') << std::endl;
+        }
         break;
 
     default:
@@ -216,4 +381,32 @@ void Chip8::step()
                   << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << instruction
                   << std::nouppercase << std::dec << std::setfill(' ') << std::endl;
     }
+}
+
+void Chip8::push(uint16_t value)
+{
+    // logic for pushing into stack
+    if (stackPtr < STACK_SIZE)
+    {
+        stack[stackPtr] = value;
+        stackPtr += 1;
+    }
+    else
+    {
+        std::cerr << "STACK IS FULL! " << std::endl;
+    }
+}
+
+uint16_t Chip8::pop()
+{
+    // logic for popping value out of stack
+    if (stackPtr == 0)
+    {
+        std::cerr << "STACK IS EMPTY! " << std::endl;
+        return 0;
+    }
+    stackPtr -= 1;
+    uint16_t temp = stack[stackPtr];
+    stack[stackPtr] = 0;
+    return temp;
 }
