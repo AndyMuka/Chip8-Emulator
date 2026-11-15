@@ -36,6 +36,7 @@ private:
     uint8_t soundTimer{};
     std::array<uint16_t, STACK_SIZE> stack{};
     uint8_t stackPtr{};
+    std::mt19937 rng{std::random_device{}()};
 
     std::array<bool, DISPLAY_WIDTH * DISPLAY_HEIGHT> display{};
     std::array<bool, NUM_KEYS> keys{};

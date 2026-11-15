@@ -237,6 +237,17 @@ void Chip8::step()
         }
         break;
         case 0xE:
+        {
+            reg[X] = reg[Y];
+            uint8_t temp = (reg[X] >> 7) & 0b1;
+            reg[X] = reg[X] << 1;
+            reg[0xF] = temp;
+        }
+        break;
+        default:
+            std::cerr << "Unknown opcode: "
+                      << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << instruction
+                      << std::nouppercase << std::dec << std::setfill(' ') << std::endl;
             break;
         }
         break;
@@ -250,9 +261,15 @@ void Chip8::step()
         indexReg = NNN;
         break;
     case 0xB:
+        pc = NNN + reg[0];
         break;
     case 0xC:
-        break;
+    {
+        std::uniform_int_distribution<int> distribution(0, 255);
+        int randomNumber = distribution(rng);
+        reg[X] = randomNumber & NN;
+    }
+    break;
     case 0xD:
     {
         int xcoord = reg[X] % DISPLAY_WIDTH;
@@ -296,14 +313,67 @@ void Chip8::step()
     }
     break;
     case 0xE:
-    {
-        reg[X] = reg[Y];
-        uint8_t temp = reg[X] & 0b1;
-        reg[X] = reg[X] >> 1;
-        reg[0xF] = temp;
-    }
-    break;
+        break;
     case 0xF:
+        switch (NN)
+        {
+        case 0x07:
+            reg[X] = delayTimer;
+            break;
+
+        case 0x15:
+            delayTimer = reg[X];
+            break;
+
+        case 0x18:
+            soundTimer = reg[X];
+            break;
+
+        case 0x1E:
+            indexReg += reg[X];
+            break;
+
+        case 0x0A:
+            break;
+
+        case 0x29:
+        {
+            int temp = reg[X] & 0xF;
+            indexReg = FONT_START + (5 * temp);
+        }
+        break;
+
+        case 0x33:
+            // gets the hundreds, tens and ones digits from reg[X]
+            memory[indexReg] = reg[X] / 100;
+            memory[indexReg + 1] = (reg[X] / 10) % 10;
+            memory[indexReg + 2] = reg[X] % 10;
+            break;
+
+        case 0x55:
+        {
+            for (int i = 0; i <= X; i++)
+            {
+                memory[indexReg + i] = reg[i];
+            }
+            indexReg += X + 1;
+        }
+        break;
+
+        case 0x65:
+        {
+            for (int i = 0; i <= X; i++)
+            {
+                reg[i] = memory[indexReg + i];
+            }
+            indexReg += X + 1;
+        }
+        break;
+        default:
+            std::cerr << "Unknown opcode: "
+                      << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << instruction
+                      << std::nouppercase << std::dec << std::setfill(' ') << std::endl;
+        }
         break;
 
     default:
