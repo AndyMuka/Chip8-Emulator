@@ -9,6 +9,47 @@ const int SCREEN_HEIGHT = 32; // CHIP8 cells down
 const int SCALE = 10;         // Pixels per cell
 const int INSTRUCTIONS_PER_FRAME = 11;
 
+int mapKey(SDL_Scancode sc)
+{
+    switch (sc)
+    {
+    case SDL_SCANCODE_1:
+        return 0x1;
+    case SDL_SCANCODE_2:
+        return 0x2;
+    case SDL_SCANCODE_3:
+        return 0x3;
+    case SDL_SCANCODE_4:
+        return 0xC;
+    case SDL_SCANCODE_Q:
+        return 0x4;
+    case SDL_SCANCODE_W:
+        return 0x5;
+    case SDL_SCANCODE_E:
+        return 0x6;
+    case SDL_SCANCODE_R:
+        return 0xD;
+    case SDL_SCANCODE_A:
+        return 0x7;
+    case SDL_SCANCODE_S:
+        return 0x8;
+    case SDL_SCANCODE_D:
+        return 0x9;
+    case SDL_SCANCODE_F:
+        return 0xE;
+    case SDL_SCANCODE_Z:
+        return 0xA;
+    case SDL_SCANCODE_X:
+        return 0x0;
+    case SDL_SCANCODE_C:
+        return 0xB;
+    case SDL_SCANCODE_V:
+        return 0xF;
+    default:
+        return -1;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -83,12 +124,27 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&e))
         {
             if (e.type == SDL_QUIT)
+            {
                 quit = true;
+            }
+            else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
+            {
+                int key = mapKey(e.key.keysym.scancode);
+                if (key != -1)
+                {
+                    bool pressed = (e.type == SDL_KEYDOWN);
+                    device.setKey(key, pressed);
+                }
+            }
         }
+        // loop making the device do 11 steps per frame
         for (int i = 0; i < INSTRUCTIONS_PER_FRAME; i++)
         {
             device.step();
         }
+
+        // doing this once per frame. deincrementing timers
+        device.tickTimers();
 
         // clearing color to black every frame
         SDL_SetRenderDrawColor(graphicsRenderer, 0x00, 0x00, 0x00, 0xFF);

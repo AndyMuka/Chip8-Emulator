@@ -313,7 +313,28 @@ void Chip8::step()
     }
     break;
     case 0xE:
-        break;
+    {
+        switch (NN)
+        {
+        case 0x9E:
+            if (keys[reg[X] & 0xF])
+            {
+                pc += 2;
+            }
+            break;
+        case 0xA1:
+            if (!keys[reg[X] & 0xF])
+            {
+                pc += 2;
+            }
+            break;
+        default:
+            std::cerr << "Unknown opcode: "
+                      << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << instruction
+                      << std::nouppercase << std::dec << std::setfill(' ') << std::endl;
+        }
+    }
+    break;
     case 0xF:
         switch (NN)
         {
@@ -409,4 +430,23 @@ uint16_t Chip8::pop()
     uint16_t temp = stack[stackPtr];
     stack[stackPtr] = 0;
     return temp;
+}
+
+void Chip8::tickTimers()
+{
+
+    if (delayTimer > 0)
+    {
+        delayTimer -= 1;
+    }
+
+    if (soundTimer > 0)
+    {
+        soundTimer -= 1;
+    }
+}
+
+void Chip8::setKey(uint8_t key, bool pressed)
+{
+    keys[key] = pressed;
 }
