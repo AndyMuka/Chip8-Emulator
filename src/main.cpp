@@ -9,6 +9,65 @@ const int SCREEN_HEIGHT = 32; // CHIP8 cells down
 const int SCALE = 10;         // Pixels per cell
 const int INSTRUCTIONS_PER_FRAME = 11;
 
+int mapKey(SDL_Scancode sc)
+{
+    switch (sc)
+    {
+    case SDL_SCANCODE_1:
+        return 0x1;
+    case SDL_SCANCODE_2:
+        return 0x2;
+    case SDL_SCANCODE_3:
+        return 0x3;
+    case SDL_SCANCODE_4:
+        return 0xC;
+    case SDL_SCANCODE_Q:
+        return 0x4;
+    case SDL_SCANCODE_W:
+        return 0x5;
+    case SDL_SCANCODE_E:
+        return 0x6;
+    case SDL_SCANCODE_R:
+        return 0xD;
+    case SDL_SCANCODE_A:
+        return 0x7;
+    case SDL_SCANCODE_S:
+        return 0x8;
+    case SDL_SCANCODE_D:
+        return 0x9;
+    case SDL_SCANCODE_F:
+        return 0xE;
+    case SDL_SCANCODE_Z:
+        return 0xA;
+    case SDL_SCANCODE_X:
+        return 0x0;
+    case SDL_SCANCODE_C:
+        return 0xB;
+    case SDL_SCANCODE_V:
+        return 0xF;
+    default:
+        return -1;
+    }
+}
+
+void audioCallback(void *, Uint8 *stream, int len)
+{
+    // SDL gives raw bytes; we chose 16-bit samples, so treat it as an array of Sint16
+    Sint16 *samples = reinterpret_cast<Sint16 *>(stream);
+    int count = len / 2; // 2 bytes per 16-bit sample
+
+    static int sampleIndex = 0; // 'static': keeps its value between calls, so the wave doesn't restart every buffer
+
+    for (int i = 0; i < count; i++)
+    {
+        // Fill samples[i] with +VOLUME or -VOLUME:
+        // which half of the current cycle is sampleIndex in?
+        samples[i] = (sampleIndex % 100 < 50) ? 3000 : -3000;
+        ;
+        sampleIndex++;
+    }
+}
+
 int main(int argc, char *argv[])
 {
     if (argc < 2)
@@ -40,7 +99,7 @@ int main(int argc, char *argv[])
     }
 
     // Initializing SDL. If any errors, SDL_Init returns -1
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
         // SDL_GetError() prints the error to console whenever SDL_Init goes wrong
         // It returns the latest error produced by an SDL funciton
@@ -71,6 +130,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    SDL_AudioSpec want{};
+    want.freq = 44100;             // samples per second
+    want.format = AUDIO_S16SYS;    // signed 16-bit samples
+    want.channels = 1;             // mono
+    want.samples = 512;            // buffer size SDL asks for each time
+    want.callback = audioCallback; // your function
+
+    SDL_AudioDeviceID audioDevice = SDL_OpenAudioDevice(nullptr, 0, &want, nullptr, 0);
+
     const auto &display = device.getDisplay();
 
     // This chunk of code keeps the window open
@@ -83,12 +151,35 @@ int main(int argc, char *argv[])
         while (SDL_PollEvent(&e))
         {
             if (e.type == SDL_QUIT)
+            {
                 quit = true;
+            }
+            else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
+            {
+                int key = mapKey(e.key.keysym.scancode);
+                if (key != -1)
+                {
+                    bool pressed = (e.type == SDL_KEYDOWN);
+                    device.setKey(key, pressed);
+                }
+            }
         }
+
+        device.newFrame();
         for (int i = 0; i < INSTRUCTIONS_PER_FRAME; i++)
         {
             device.step();
         }
+        // loop making the device do 11 steps per frame
+        for (int i = 0; i < INSTRUCTIONS_PER_FRAME; i++)
+        {
+            device.step();
+        }
+
+        // doing this once per frame. deincrementing timers
+        device.tickTimers();
+
+        SDL_PauseAudioDevice(audioDevice, device.getSoundTimer() > 0 ? 0 : 1);
 
         // clearing color to black every frame
         SDL_SetRenderDrawColor(graphicsRenderer, 0x00, 0x00, 0x00, 0xFF);
