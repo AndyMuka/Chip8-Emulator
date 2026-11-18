@@ -3,7 +3,7 @@
 A CHIP-8 emulator written from scratch in **C++17** with **SDL2**. It implements the full original CHIP-8 instruction set, a 16-key keypad, 60 Hz timers and sound, and passes the complete [Timendus CHIP-8 test suite](https://github.com/Timendus/chip8-test-suite), including quirk compatibility with the original COSMAC VIP.
 
 <!-- Replace with your own screenshots/GIF, e.g. saved in a docs/ folder -->
-![IBM logo test](docs/ibm-logo.png)
+![Test suite results](docs/test-suite-screenshot.png)
 ![Gameplay](docs/gameplay.gif)
 
 ## Features
