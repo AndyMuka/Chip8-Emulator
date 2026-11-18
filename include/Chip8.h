@@ -28,6 +28,8 @@ public:
     uint16_t pop();
     void tickTimers();
     void setKey(uint8_t key, bool pressed);
+    uint8_t getSoundTimer() const;
+    void newFrame();
 
 private:
     std::array<uint8_t, MEMORY_SIZE> memory{};
@@ -42,4 +44,6 @@ private:
 
     std::array<bool, DISPLAY_WIDTH * DISPLAY_HEIGHT> display{};
     std::array<bool, NUM_KEYS> keys{};
+    int waitingKey = -1;
+    bool drawnThisFrame = false;
 };

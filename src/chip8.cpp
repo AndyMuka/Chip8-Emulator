@@ -179,12 +179,15 @@ void Chip8::step()
             break;
         case 0x1:
             reg[X] = reg[X] | reg[Y];
+            reg[0xF] = 0;
             break;
         case 0x2:
             reg[X] = reg[X] & reg[Y];
+            reg[0xF] = 0;
             break;
         case 0x3:
             reg[X] = reg[X] ^ reg[Y];
+            reg[0xF] = 0;
             break;
         case 0x4:
         {
@@ -272,6 +275,12 @@ void Chip8::step()
     break;
     case 0xD:
     {
+        // Display wait: only one draw per frame
+        if (drawnThisFrame)
+        {
+            pc -= 2;
+            break;
+        }
         int xcoord = reg[X] % DISPLAY_WIDTH;
         int ycoord = reg[Y] % DISPLAY_HEIGHT;
         reg[0xF] = 0;
@@ -310,6 +319,7 @@ void Chip8::step()
                 coulumnCount += 1;
             }
         }
+        drawnThisFrame = true;
     }
     break;
     case 0xE:
@@ -355,7 +365,33 @@ void Chip8::step()
             break;
 
         case 0x0A:
-            break;
+        {
+            if (waitingKey == -1)
+            {
+                for (int k = 0; k < NUM_KEYS; k++)
+                {
+                    if (keys[k])
+                    {
+                        waitingKey = k;
+                        break;
+                    }
+                }
+                pc -= 2;
+            }
+            else
+            {
+                if (!keys[waitingKey])
+                {
+                    reg[X] = waitingKey;
+                    waitingKey = -1;
+                }
+                else
+                {
+                    pc -= 2;
+                }
+            }
+        }
+        break;
 
         case 0x29:
         {
@@ -449,4 +485,14 @@ void Chip8::tickTimers()
 void Chip8::setKey(uint8_t key, bool pressed)
 {
     keys[key] = pressed;
+}
+
+uint8_t Chip8::getSoundTimer() const
+{
+    return soundTimer;
+}
+
+void Chip8::newFrame()
+{
+    drawnThisFrame = false;
 }
